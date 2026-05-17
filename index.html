@@ -14,6 +14,7 @@
   body {
     font-family: 'Consolas', 'Monospace';
     overflow: hidden;
+    background: #000;
   }
 
   .dark-slide {
@@ -191,3 +192,93 @@ slidesData.forEach((slide, index) => {
   div.id = `slide-${index}`;
   div.innerHTML = `
     <div class="slide-content">
+      <h2>${slide.title}</h2>
+      <p>${slide.content.replace(/\n/g, '<br>')}</p>
+    </div>
+  `;
+  container.appendChild(div);
+});
+
+const allSlides = document.querySelectorAll('.slide');
+const codeDisplay = document.getElementById('code-display');
+const codeText = `// Initializing Product Knowledge Presentation
+// Loading slide data...
+// Rendering content...
+// Ready!`;
+
+function typeCode() {
+  let i = 0;
+  isTyping = true;
+  const interval = setInterval(() => {
+    if (i < codeText.length) {
+      codeDisplay.textContent += codeText.charAt(i);
+      i++;
+    } else {
+      clearInterval(interval);
+      isTyping = false;
+      setTimeout(nextSlide, 2000);
+    }
+  }, 30);
+}
+
+function nextSlide() {
+  if (currentSlide < allSlides.length - 1) {
+    allSlides[currentSlide].classList.remove('active');
+    currentSlide++;
+    allSlides[currentSlide].classList.add('active');
+    
+    if (currentSlide === 1) {
+      drawHeart();
+    }
+  }
+}
+
+function drawHeart() {
+  const canvas = document.getElementById('heartCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  
+  let t = 0;
+  const interval = setInterval(() => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#ff2d55';
+    
+    const x = canvas.width / 2;
+    const y = canvas.height / 2;
+    const scale = 20;
+    
+    ctx.beginPath();
+    for (let i = 0; i < Math.PI * 2; i += 0.01) {
+      const px = 16 * Math.sin(i) * Math.sin(i) * Math.sin(i);
+      const py = 13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i);
+      ctx.lineTo(x + px * scale, y - py * scale);
+    }
+    ctx.fill();
+    
+    t++;
+    if (t > 100) {
+      clearInterval(interval);
+      setTimeout(nextSlide, 1500);
+    }
+  }, 50);
+}
+
+document.addEventListener('click', () => {
+  if (!isTyping && currentSlide > 0) {
+    nextSlide();
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    if (!isTyping && currentSlide > 0) {
+      nextSlide();
+    }
+  }
+});
+
+typeCode();
+</script>
+</body>
+</html>
