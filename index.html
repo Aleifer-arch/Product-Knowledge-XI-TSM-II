@@ -289,30 +289,81 @@ function showQR() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const qrSize = 200;
-  const qrX = canvas.width / 2 - qrSize / 2;
-  const qrY = canvas.height / 2 - qrSize / 2;
+  const centerX = canvas.width / 2;
+  const centerY = canvas.height / 2;
 
-  const qrDiv = document.createElement('div');
-  qrDiv.style.position = 'absolute';
-  qrDiv.style.left = qrX + 'px';
-  qrDiv.style.top = qrY + 'px';
-  qrDiv.style.width = qrSize + 'px';
-  qrDiv.style.height = qrSize + 'px';
-  qrDiv.style.opacity = '0';
-  qrDiv.style.transition = 'opacity 1s';
-  qrDiv.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}" style="width:100%; height:100%;">`;
+  const qrImg = new Image();
+  qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}`;
 
-  document.getElementById('slide-qr').appendChild(qrDiv);
+  qrImg.onload = () => {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = qrSize;
+    tempCanvas.height = qrSize;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(qrImg, 0, 0);
+    const imageData = tempCtx.getImageData(0, 0, qrSize, qrSize).data;
 
-  setTimeout(() => {
-    qrDiv.style.opacity = '1';
-  }, 500);
+    const particles = [];
+    const step = 4;
+    for (let y = 0; y < qrSize; y += step) {
+      for (let x = 0; x < qrSize; x += step) {
+        const alpha = imageData[(y * qrSize + x) * 4 + 3];
+        if (alpha > 128) {
+          const targetX = centerX - qrSize/2 + x;
+          const targetY = centerY - qrSize/2 + y;
 
-  typeText(document.getElementById('qr-title'), 'Scan QR Code', 40, () => {
-    typeText(document.getElementById('qr-desc'), QR_LINK, 20, () => {
-      setTimeout(nextSlide, 4000);
-    });
-  });
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            tx: targetX,
+            ty: targetY,
+            vx: 0,
+            vy: 0
+          });
+        }
+      }
+    }
+
+    let frame = 0;
+    const totalFrames = 60;
+
+    const animate = setInterval(() => {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach(p => {
+        const dx = p.tx - p.x;
+        const dy = p.ty - p.y;
+        p.vx += dx * 0.01;
+        p.vy += dy * 0.01;
+        p.vx *= 0.95;
+        p.vy *= 0.95;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        ctx.fillStyle = `rgba(138, 43, 226, ${0.4 + frame/totalFrames * 0.6})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      frame++;
+      if (frame >= totalFrames) {
+        clearInterval(animate);
+        ctx.drawImage(qrImg, centerX - qrSize/2, centerY - qrSize/2);
+      }
+    }, 50);
+  };
+
+  qrImg.onerror = () => {
+    typeText(document.getElementById('qr-title'), 'Scan QR Code', 40);
+    typeText(document.getElementById('qr-desc'), QR_LINK, 20);
+    setTimeout(nextSlide, 5000);
+  };
+
+  typeText(document.getElementById('qr-title'), 'Scan QR Code', 40);
+  typeText(document.getElementById('qr-desc'), QR_LINK, 20);
+  setTimeout(nextSlide, 5000);
 }
 
 function nextSlide() {
