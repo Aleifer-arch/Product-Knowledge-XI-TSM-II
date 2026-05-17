@@ -301,7 +301,7 @@ function showQR() {
   qrDiv.style.opacity = '0';
   qrDiv.style.transition = 'opacity 1s';
   qrDiv.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}" style="width:100%; height:100%;">`;
-  
+
   document.getElementById('slide-qr').appendChild(qrDiv);
 
   setTimeout(() => {
@@ -313,7 +313,6 @@ function showQR() {
       setTimeout(nextSlide, 4000);
     });
   });
-}
 }
 
 function nextSlide() {
