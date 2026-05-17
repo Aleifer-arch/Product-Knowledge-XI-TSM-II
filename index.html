@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Loading - Wonton Chili Oil</title>
+<style>
+    * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    background: #000;
+    overflow: hidden;
+    font-family: 'Consolas', 'Monospace';
+  }
+
+  #loading-screen {
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #000;
+    z-index: 9999;
+    transition: opacity 1s ease-out;
+  }
+
+  #code-display {
+    color: #00ff88;
+    font-size: 14px;
+    text-align: left;
+    max-width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    white-space: pre-wrap;
+    transition: opacity 1s ease-out;
+  }
+
+  #heart-container {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  canvas {
+    display: block;
+  }
+
+ .loading-text {
+    color: #ff2d55;
+    font-size: 18px;
+    margin-top: 20px;
+    letter-spacing: 3px;
+    animation: blink 1.2s infinite;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  #main-content {
+    display: none;
+    padding: 40px;
+    color: white;
+    font-family: 'Segoe UI', sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<div id="loading-screen">
+  <pre id="code-display"></pre>
+
+  <div id="heart-container">
+    <canvas id="heartCanvas"></canvas>
+    <div class="loading-text">Loading...</div>
+  </div>
+</div>
+
+<div id="main-content">
+  <h1>Product Knowledge</h1>
+  <h2>Wonton Daging Chili Oil</h2>
+  <p>Selamat datang di website tugas PKWU XI TSM 2</p>
+</div>
+
+<script>
+const code = `import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+const codeDisplay = document.getElementById('code-display');
+let i = 0;
+const typingSpeed = 25;
+
+function typeCode() {
+  if (i < code.length) {
+    codeDisplay.textContent += code.charAt(i);
+    i++;
+    setTimeout(typeCode, typingSpeed);
+  } else {
+    setTimeout(showHeartAnimation, 2000);
+  }
+}
+
+function showHeartAnimation() {
+  document.getElementById('code-display').style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('code-display').style.display = 'none';
+    document.getElementById('heart-container').style.display = 'flex';
+    startHeartAnimation();
+  }, 1000);
+}
+
+const canvas = document.getElementById('heartCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let points = [];
+let frame = 0;
+const totalFrames = 300;
+
+function heartX(t) {
+  return 15 * Math.pow(Math.sin(t), 3);
+}
+
+function heartY(t) {
+  return 12 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+}
+
+for (let i = 0; i < totalFrames; i++) {
+  let t = (i / totalFrames) * 12 * Math.PI;
+  points.push({
+    x: heartX(t) * 20 + canvas.width / 2,
+    y: -heartY(t) * 20 + canvas.height / 2
+  });
+}
+
+function startHeartAnimation() {
+  frame = 0;
+  animate();
+}
+
+function animate() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  if (frame < points.length) {
+    frame += 2;
+  }
+
+  ctx.strokeStyle = 'rgba(255, 45, 85, 0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(canvas.width / 2, canvas.height / 2);
+  for (let i = 0; i < frame; i++) {
+    ctx.lineTo(points[i].x, points[i].y);
+  }
+  ctx.stroke();
+
+  ctx.fillStyle = '#ff2d55';
+  for (let i = 0; i < frame; i++) {
+    ctx.beginPath();
+    ctx.arc(points[i].x, points[i].y, 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  if (frame < points.length) {
+    requestAnimationFrame(animate);
+  } else {
+    setTimeout(hideLoading, 800);
+  }
+}
+
+function hideLoading() {
+  document.getElementById('loading-screen').style.opacity = '0';
+  setTimeout(() => {
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+  }, 1000);
+}
+
+typeCode();
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
