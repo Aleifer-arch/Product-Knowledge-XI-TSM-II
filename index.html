@@ -2,7 +2,8 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<title>Loading - Wonton Chili Oil</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product Knowledge - Wonton Chili Oil</title>
 <style>
     * {
     margin: 0;
@@ -11,46 +12,49 @@
   }
 
   body {
-    background: #000;
-    overflow: hidden;
     font-family: 'Consolas', 'Monospace';
+    overflow: hidden;
   }
 
-  #loading-screen {
-    position: fixed;
-    width: 100%;
+  .dark-slide {
+    background: #000;
+    color: #00ff88;
+  }
+
+  .content-slide {
+    background: #0a2d2d;
+    color: #e0f7f7;
+  }
+
+  .slide {
+    width: 100vw;
     height: 100vh;
-    display: flex;
+    display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: #000;
-    z-index: 9999;
-    transition: opacity 1s ease-out;
+    padding: 40px 20px;
+    transition: opacity 0.8s ease;
+  }
+
+  .slide.active {
+    display: flex;
   }
 
   #code-display {
-    color: #00ff88;
     font-size: 14px;
     text-align: left;
     max-width: 90%;
     max-height: 80vh;
-    overflow: hidden;
     white-space: pre-wrap;
-    transition: opacity 1s ease-out;
-  }
-
-  #heart-container {
-    display: none;
-    flex-direction: column;
-    align-items: center;
+    overflow: hidden;
   }
 
   canvas {
     display: block;
   }
 
- .loading-text {
+  .loading-text {
     color: #ff2d55;
     font-size: 18px;
     margin-top: 20px;
@@ -64,135 +68,126 @@
     50% { opacity: 0.3; }
   }
 
-  #main-content {
-    display: none;
-    padding: 40px;
-    color: white;
+  .slide-content {
+    max-width: 800px;
+    width: 100%;
+    text-align: left;
+  }
+
+  .slide-content h2 {
+    color: #00ffd5;
+    font-size: 28px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #00ffd5;
+    padding-bottom: 10px;
+  }
+
+  .slide-content p, .slide-content li {
+    font-size: 20px;
+    line-height: 1.6;
     font-family: 'Segoe UI', sans-serif;
+  }
+
+  .slide-content ul, .slide-content ol {
+    margin-left: 25px;
+    margin-top: 15px;
+  }
+
+  .slide-content li {
+    margin-bottom: 10px;
+  }
+
+  .slide-content strong {
+    color: #00ffd5;
+  }
+
+  .end-slide h1 {
+    font-size: 72px;
+    color: #00ffd5;
+    letter-spacing: 10px;
+    animation: glow 2s infinite;
+  }
+
+  @keyframes glow {
+    0%, 100% { text-shadow: 0 0 20px #00ffd5; }
+    50% { text-shadow: 0 0 40px #00ffd5, 0 0 60px #00ffd5; }
+  }
+
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    background: currentColor;
+    animation: blink 1s infinite;
+  }
+
+  @media (max-width: 600px) {
+    .slide-content h2 { font-size: 22px; }
+    .slide-content p, .slide-content li { font-size: 16px; }
+    #code-display { font-size: 11px; }
   }
 </style>
 </head>
 <body>
 
-<div id="loading-screen">
+<div class="slide dark-slide active" id="slide-code">
   <pre id="code-display"></pre>
-
-  <div id="heart-container">
-    <canvas id="heartCanvas"></canvas>
-    <div class="loading-text">Loading...</div>
-  </div>
 </div>
 
-<div id="main-content">
-  <h1>Product Knowledge</h1>
-  <h2>Wonton Daging Chili Oil</h2>
-  <p>Selamat datang di website tugas PKWU XI TSM 2</p>
+<div class="slide dark-slide" id="slide-heart">
+  <canvas id="heartCanvas"></canvas>
+  <div class="loading-text">Loading...</div>
+</div>
+
+<div id="content-container"></div>
+
+<div class="slide content-slide end-slide" id="slide-end">
+  <h1>END</h1>
 </div>
 
 <script>
-const code = `import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-
-const codeDisplay = document.getElementById('code-display');
-let i = 0;
-const typingSpeed = 25;
-
-function typeCode() {
-  if (i < code.length) {
-    codeDisplay.textContent += code.charAt(i);
-    i++;
-    setTimeout(typeCode, typingSpeed);
-  } else {
-    setTimeout(showHeartAnimation, 2000);
+const slidesData = [
+  {
+    title: "Nama Produk",
+    content: "Wonton Daging Chili Oil"
+  },
+  {
+    title: "Konsep Produk", 
+    content: "Makanan camilan/berat ringan dengan konsep fusion. Wonton isi daging ayam yang disajikan dengan siraman chili oil. Rasanya gurih, pedas, dan cocok untuk anak muda."
+  },
+  {
+    title: "Target Pasar",
+    content: "• Siswa/siswi SMK N 7 KENDAL\n• Pecinta makanan pedas dan praktis\n• Penjualan di lingkungan sekolah dan online via WhatsApp."
+  },
+  {
+    title: "Kelebihan Produk",
+    content: "• Rasa: Kombinasi gurih daging dan pedas nendang dari chili oil buatan sendiri\n• Kemasan: Praktis menggunakan box mika atau cup sekali pakai\n• Harga: Terjangkau, target jual di bawah Rp10.000 per porsi\n• Nilai Jual: Fresh made saat ada pesanan."
+  },
+  {
+    title: "Bahan Baku Utama",
+    content: "• Kulit pangsit/wonton\n• Daging ayam giling\n• Bumbu: bawang putih, merica, kecap asin, minyak wijen, dsb\n• Chili Oil: minyak panas, cabai kering, bawang putih, biji wijen."
+  },
+  {
+    title: "Proses Pembuatan Singkat",
+    content: "1. Isi kulit wonton dengan adonan daging, lalu lipat rapi\n2. Rebus atau kukus hingga matang\n3. Sajikan dengan siraman chili oil saat sudah selesai dibuat."
+  },
+  {
+    title: "Branding",
+    content: "Nama Produk: Wonton Daging Chili Oil\nKelas: XI TSM 2\nWebsite Tugas: https://branding-homework.vercel.app/profile.html"
+  },
+  {
+    title: "Pengetahuan Dasar Wonton",
+    content: "• Asal-usul: Wonton berasal dari Tiongkok sejak Dinasti Tang\n• Jenis: Wonton Kuah, Wonton Goreng, Wonton Chili Oil\n• Kulit Wonton: Tepung terigu, telur, air dengan takaran pas\n• Nilai Gizi: Sumber protein dan capsaicin untuk metabolisme\n• Alasan PKWU: Bahan murah, proses cepat, tahan 2-3 jam"
   }
-}
+];
 
-function showHeartAnimation() {
-  document.getElementById('code-display').style.opacity = '0';
-  setTimeout(() => {
-    document.getElementById('code-display').style.display = 'none';
-    document.getElementById('heart-container').style.display = 'flex';
-    startHeartAnimation();
-  }, 1000);
-}
+let currentSlide = 0;
+let isTyping = false;
 
-const canvas = document.getElementById('heartCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let points = [];
-let frame = 0;
-const totalFrames = 300;
-
-function heartX(t) {
-  return 15 * Math.pow(Math.sin(t), 3);
-}
-
-function heartY(t) {
-  return 12 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
-}
-
-for (let i = 0; i < totalFrames; i++) {
-  let t = (i / totalFrames) * 12 * Math.PI;
-  points.push({
-    x: heartX(t) * 20 + canvas.width / 2,
-    y: -heartY(t) * 20 + canvas.height / 2
-  });
-}
-
-function startHeartAnimation() {
-  frame = 0;
-  animate();
-}
-
-function animate() {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  if (frame < points.length) {
-    frame += 2;
-  }
-
-  ctx.strokeStyle = 'rgba(255, 45, 85, 0.3)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  ctx.moveTo(canvas.width / 2, canvas.height / 2);
-  for (let i = 0; i < frame; i++) {
-    ctx.lineTo(points[i].x, points[i].y);
-  }
-  ctx.stroke();
-
-  ctx.fillStyle = '#ff2d55';
-  for (let i = 0; i < frame; i++) {
-    ctx.beginPath();
-    ctx.arc(points[i].x, points[i].y, 2, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  if (frame < points.length) {
-    requestAnimationFrame(animate);
-  } else {
-    setTimeout(hideLoading, 800);
-  }
-}
-
-function hideLoading() {
-  document.getElementById('loading-screen').style.opacity = '0';
-  setTimeout(() => {
-    document.getElementById('loading-screen').style.display = 'none';
-    document.getElementById('main-content').style.display = 'block';
-  }, 1000);
-}
-
-typeCode();
-
-window.addEventListener('resize', () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-});
-</script>
-
-</body>
-</html>
+const container = document.getElementById('content-container');
+slidesData.forEach((slide, index) => {
+  const div = document.createElement('div');
+  div.className = 'slide content-slide';
+  div.id = `slide-${index}`;
+  div.innerHTML = `
+    <div class="slide-content">
