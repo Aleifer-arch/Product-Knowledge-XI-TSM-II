@@ -286,53 +286,34 @@ function showQR() {
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const qrSize = 200;
   const qrX = canvas.width / 2 - qrSize / 2;
   const qrY = canvas.height / 2 - qrSize / 2;
 
-  const qrImg = new Image();
-  qrImg.crossOrigin = "Anonymous";
-  qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}`;
+  const qrDiv = document.createElement('div');
+  qrDiv.style.position = 'absolute';
+  qrDiv.style.left = qrX + 'px';
+  qrDiv.style.top = qrY + 'px';
+  qrDiv.style.width = qrSize + 'px';
+  qrDiv.style.height = qrSize + 'px';
+  qrDiv.style.opacity = '0';
+  qrDiv.style.transition = 'opacity 1s';
+  qrDiv.innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}" style="width:100%; height:100%;">`;
+  
+  document.getElementById('slide-qr').appendChild(qrDiv);
 
-  qrImg.onload = () => {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = qrSize;
-    tempCanvas.height = qrSize;
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.drawImage(qrImg, 0, 0);
-    const imageData = tempCtx.getImageData(0, 0, qrSize, qrSize).data;
+  setTimeout(() => {
+    qrDiv.style.opacity = '1';
+  }, 500);
 
-    const qrPoints = [];
-    for (let y = 0; y < qrSize; y += 3) {
-      for (let x = 0; x < qrSize; x += 3) {
-        const index = (y * qrSize + x) * 4;
-        if (imageData[index] < 128) {
-          qrPoints.push({x: qrX + x, y: qrY + y});
-        }
-      }
-    }
-
-    let i = 0;
-    const interval = setInterval(() => {
-      if (i < qrPoints.length) {
-        ctx.fillStyle = '#00ffd5';
-        ctx.beginPath();
-        ctx.arc(qrPoints[i].x, qrPoints[i].y, 2, 0, Math.PI * 2);
-        ctx.fill();
-        i++;
-      } else {
-        clearInterval(interval);
-        typeText(document.getElementById('qr-title'), 'Scan QR Code', 40, () => {
-          typeText(document.getElementById('qr-desc'), QR_LINK, 20, () => {
-            setTimeout(nextSlide, 4000);
-          });
-        });
-      }
-    }, 8);
-  };
-
-  typeText(document.getElementById('qr-title'), 'Membentuk QR CODE...', 40);
+  typeText(document.getElementById('qr-title'), 'Scan QR Code', 40, () => {
+    typeText(document.getElementById('qr-desc'), QR_LINK, 20, () => {
+      setTimeout(nextSlide, 4000);
+    });
+  });
+}
 }
 
 function nextSlide() {
