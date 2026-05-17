@@ -41,7 +41,7 @@
     display: flex;
   }
 
-  #code-display {
+  #code-display,.typing-text {
     font-size: 14px;
     text-align: left;
     max-width: 90%;
@@ -61,14 +61,6 @@
 
   canvas {
     display: block;
-  }
-
-.loading-text {
-    color: #ff2d55;
-    font-size: 18px;
-    margin-top: 20px;
-    letter-spacing: 3px;
-    font-family: 'Segoe UI', sans-serif;
   }
 
 .slide-content {
@@ -97,18 +89,10 @@
     letter-spacing: 10px;
   }
 
-.hint {
-    position: absolute;
-    bottom: 30px;
-    font-size: 14px;
-    color: #666;
-    font-family: 'Segoe UI', sans-serif;
-  }
-
   @media (max-width: 600px) {
 .slide-content h2 { font-size: 22px; }
 .slide-content p,.slide-content li { font-size: 16px; }
-    #code-display { font-size: 11px; }
+    #code-display,.typing-text { font-size: 11px; }
   }
 </style>
 </head>
@@ -116,19 +100,16 @@
 
 <div class="slide dark-slide active" id="slide-code">
   <pre id="code-display"></pre>
-  <div class="hint">Klik untuk lanjut</div>
 </div>
 
 <div class="slide dark-slide" id="slide-heart">
   <canvas id="heartCanvas"></canvas>
-  <div class="loading-text" id="loading-text">Drawing...</div>
-  <div class="hint">Klik untuk mulai</div>
 </div>
 
 <div id="content-container"></div>
 
 <div class="slide content-slide end-slide" id="slide-end">
-  <h1>END</h1>
+  <h1 class="typing-text" id="end-text"></h1>
 </div>
 
 <script>
@@ -153,10 +134,9 @@ slidesData.forEach((slide, index) => {
   div.id = `slide-${index}`;
   div.innerHTML = `
     <div class="slide-content">
-      <h2>${slide.title}</h2>
-      <p>${slide.content.replace(/\n/g, '<br>')}</p>
+      <h2 class="typing-text" id="title-${index}"></h2>
+      <p class="typing-text" id="content-${index}"></p>
     </div>
-    <div class="hint">Klik untuk lanjut</div>
   `;
   container.appendChild(div);
 });
@@ -208,12 +188,29 @@ plt.show( )`;
 
 function highlightCode(code) {
   return code
- .replace(/(\#.*)/g, '<span class="comment">$1</span>')
- .replace(/\b(def|import|return|for|in|if|from|as)\b/g, '<span class="keyword">$1</span>')
- .replace(/\b(np|plt|animation|fig|ax)\b/g, '<span class="builtin">$1</span>')
- .replace(/\b(hearta|heartb|animate)\b/g, '<span class="function">$1</span>')
- .replace(/('[^']*')/g, '<span class="string">$1</span>')
- .replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+.replace(/(\#.*)/g, '<span class="comment">$1</span>')
+.replace(/\b(def|import|return|for|in|if|from|as)\b/g, '<span class="keyword">$1</span>')
+.replace(/\b(np|plt|animation|fig|ax)\b/g, '<span class="builtin">$1</span>')
+.replace(/\b(hearta|heartb|animate)\b/g, '<span class="function">$1</span>')
+.replace(/('[^']*')/g, '<span class="string">$1</span>')
+.replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+}
+
+function typeText(element, text, speed, callback) {
+  let i = 0;
+  isTyping = true;
+  element.textContent = '';
+
+  const interval = setInterval(() => {
+    if (i < text.length) {
+      element.textContent += text.charAt(i);
+      i++;
+    } else {
+      clearInterval(interval);
+      isTyping = false;
+      if (callback) setTimeout(callback, 800);
+    }
+  }, speed);
 }
 
 function typeCode() {
@@ -229,6 +226,38 @@ function typeCode() {
     } else {
       clearInterval(interval);
       isTyping = false;
+      setTimeout(nextSlide, 1000);
+    }
+  }, 15);
+}
+
+function drawHeartPoints() {
+  const canvas = document.getElementById('heartCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const points = [];
+  for (let t = 0; t < Math.PI * 2; t += 0.02) {
+    const px = 16 * Math.sin(t) * Math.sin(t) * Math.sin(t);
+    const py = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+    points.push({
+      x: canvas.width / 2 + px * 20,
+      y: canvas.height / 2 - py * 20
+    });
+  }
+
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < points.length) {
+      ctx.fillStyle = '#ff2d55';
+      ctx.beginPath();
+      ctx.arc(points[i].x, points[i].y, 2, 0, Math.PI * 2);
+      ctx.fill();
+      i++;
+    } else {
+      clearInterval(interval);
+      setTimeout(nextSlide, 1000);
     }
   }, 15);
 }
@@ -240,52 +269,22 @@ function nextSlide() {
     allSlides[currentSlide].classList.add('active');
 
     if (currentSlide === 1) {
-      const canvas = document.getElementById('heartCanvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      drawHeartPoints();
+    } else if (currentSlide >= 2 && currentSlide < allSlides.length - 1) {
+      const index = currentSlide - 2;
+      const titleEl = document.getElementById(`title-${index}`);
+      const contentEl = document.getElementById(`content-${index}`);
 
-      let t = 0;
-      const loadingText = document.getElementById('loading-text');
-      const interval = setInterval(() => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#ff2d55';
-
-        const x = canvas.width / 2;
-        const y = canvas.height / 2;
-        const scale = 20;
-
-        ctx.beginPath();
-        for (let i = 0; i < Math.PI * 2; i += 0.01) {
-          const px = 16 * Math.sin(i) * Math.sin(i) * Math.sin(i);
-          const py = 13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i);
-          ctx.lineTo(x + px * scale, y - py * scale);
-        }
-        ctx.fill();
-
-        t++;
-        if (t > 100) {
-          clearInterval(interval);
-          loadingText.textContent = 'Ready';
-        }
-      }, 30);
+      typeText(titleEl, slidesData[index].title, 30, () => {
+        typeText(contentEl, slidesData[index].content, 20, () => {
+          setTimeout(nextSlide, 1500);
+        });
+      });
+    } else if (currentSlide === allSlides.length - 1) {
+      typeText(document.getElementById('end-text'), 'END', 100);
     }
   }
 }
-
-document.addEventListener('click', () => {
-  if (!isTyping) {
-    nextSlide();
-  }
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'ArrowRight' || e.key === ' ') {
-    if (!isTyping) {
-      nextSlide();
-    }
-  }
-});
 
 typeCode();
 </script>
