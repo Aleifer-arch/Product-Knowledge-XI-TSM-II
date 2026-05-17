@@ -292,74 +292,58 @@ function showQR() {
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2;
 
-  const qrImg = new Image();
-  qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}`;
+  const particles = [];
+  const gridSize = 25;
+  const dotSize = qrSize / gridSize;
 
-  qrImg.onload = () => {
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = qrSize;
-    tempCanvas.height = qrSize;
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.drawImage(qrImg, 0, 0);
-    const imageData = tempCtx.getImageData(0, 0, qrSize, qrSize).data;
+  for (let i = 0; i < 120; i++) {
+    const tx = centerX - qrSize/2 + Math.random() * qrSize;
+    const ty = centerY - qrSize/2 + Math.random() * qrSize;
 
-    const particles = [];
-    const step = 4;
-    for (let y = 0; y < qrSize; y += step) {
-      for (let x = 0; x < qrSize; x += step) {
-        const alpha = imageData[(y * qrSize + x) * 4 + 3];
-        if (alpha > 128) {
-          const targetX = centerX - qrSize/2 + x;
-          const targetY = centerY - qrSize/2 + y;
+    particles.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      tx: tx,
+      ty: ty,
+      vx: 0,
+      vy: 0
+    });
+  }
 
-          particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            tx: targetX,
-            ty: targetY,
-            vx: 0,
-            vy: 0
-          });
-        }
-      }
-    }
+  let frame = 0;
+  const totalFrames = 60;
 
-    let frame = 0;
-    const totalFrames = 60;
+  const animate = setInterval(() => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const animate = setInterval(() => {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      const dx = p.tx - p.x;
+      const dy = p.ty - p.y;
+      p.vx += dx * 0.008;
+      p.vy += dy * 0.008;
+      p.vx *= 0.94;
+      p.vy *= 0.94;
+      p.x += p.vx;
+      p.y += p.vy;
 
-      particles.forEach(p => {
-        const dx = p.tx - p.x;
-        const dy = p.ty - p.y;
-        p.vx += dx * 0.01;
-        p.vy += dy * 0.01;
-        p.vx *= 0.95;
-        p.vy *= 0.95;
-        p.x += p.vx;
-        p.y += p.vy;
+      const opacity = 0.3 + (frame / totalFrames) * 0.7;
+      ctx.fillStyle = `rgba(138, 43, 226, ${opacity})`;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    });
 
-        ctx.fillStyle = `rgba(138, 43, 226, ${0.4 + frame/totalFrames * 0.6})`;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      frame++;
-      if (frame >= totalFrames) {
-        clearInterval(animate);
+    frame++;
+    if (frame >= totalFrames) {
+      clearInterval(animate);
+      const qrImg = new Image();
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}`;
+      qrImg.onload = () => {
         ctx.drawImage(qrImg, centerX - qrSize/2, centerY - qrSize/2);
-      }
-    }, 50);
-  };
-
-  qrImg.onerror = () => {
-    typeText(document.getElementById('qr-title'), 'Scan QR Code', 40);
-    typeText(document.getElementById('qr-desc'), QR_LINK, 20);
-    setTimeout(nextSlide, 5000);
-  };
+      };
+    }
+  }, 50);
 
   typeText(document.getElementById('qr-title'), 'Scan QR Code', 40);
   typeText(document.getElementById('qr-desc'), QR_LINK, 20);
