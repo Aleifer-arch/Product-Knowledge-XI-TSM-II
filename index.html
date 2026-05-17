@@ -17,17 +17,17 @@
     background: #000;
   }
 
-  .dark-slide {
+.dark-slide {
     background: #000;
-    color: #00ff88;
+    color: #c9d1d9;
   }
 
-  .content-slide {
+.content-slide {
     background: #0a2d2d;
     color: #e0f7f7;
   }
 
-  .slide {
+.slide {
     width: 100vw;
     height: 100vh;
     display: none;
@@ -35,10 +35,9 @@
     justify-content: center;
     align-items: center;
     padding: 40px 20px;
-    transition: opacity 0.8s ease;
   }
 
-  .slide.active {
+.slide.active {
     display: flex;
   }
 
@@ -49,33 +48,36 @@
     max-height: 80vh;
     white-space: pre-wrap;
     overflow: hidden;
+    color: #c9d1d9;
   }
+
+  /* GitHub dark theme colors */
+.keyword { color: #ff7b72; }
+.function { color: #d2a8ff; }
+.string { color: #a5d6ff; }
+.number { color: #79c0ff; }
+.comment { color: #8d96a0; }
+.builtin { color: #ffa657; }
 
   canvas {
     display: block;
   }
 
-  .loading-text {
+.loading-text {
     color: #ff2d55;
     font-size: 18px;
     margin-top: 20px;
     letter-spacing: 3px;
-    animation: blink 1.2s infinite;
     font-family: 'Segoe UI', sans-serif;
   }
 
-  @keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .slide-content {
+.slide-content {
     max-width: 800px;
     width: 100%;
     text-align: left;
   }
 
-  .slide-content h2 {
+.slide-content h2 {
     color: #00ffd5;
     font-size: 28px;
     margin-bottom: 20px;
@@ -83,48 +85,29 @@
     padding-bottom: 10px;
   }
 
-  .slide-content p, .slide-content li {
+.slide-content p,.slide-content li {
     font-size: 20px;
     line-height: 1.6;
     font-family: 'Segoe UI', sans-serif;
   }
 
-  .slide-content ul, .slide-content ol {
-    margin-left: 25px;
-    margin-top: 15px;
-  }
-
-  .slide-content li {
-    margin-bottom: 10px;
-  }
-
-  .slide-content strong {
-    color: #00ffd5;
-  }
-
-  .end-slide h1 {
+.end-slide h1 {
     font-size: 72px;
     color: #00ffd5;
     letter-spacing: 10px;
-    animation: glow 2s infinite;
   }
 
-  @keyframes glow {
-    0%, 100% { text-shadow: 0 0 20px #00ffd5; }
-    50% { text-shadow: 0 0 40px #00ffd5, 0 0 60px #00ffd5; }
-  }
-
-  .cursor {
-    display: inline-block;
-    width: 2px;
-    height: 1em;
-    background: currentColor;
-    animation: blink 1s infinite;
+.hint {
+    position: absolute;
+    bottom: 30px;
+    font-size: 14px;
+    color: #666;
+    font-family: 'Segoe UI', sans-serif;
   }
 
   @media (max-width: 600px) {
-    .slide-content h2 { font-size: 22px; }
-    .slide-content p, .slide-content li { font-size: 16px; }
+.slide-content h2 { font-size: 22px; }
+.slide-content p,.slide-content li { font-size: 16px; }
     #code-display { font-size: 11px; }
   }
 </style>
@@ -133,11 +116,13 @@
 
 <div class="slide dark-slide active" id="slide-code">
   <pre id="code-display"></pre>
+  <div class="hint">Klik untuk lanjut</div>
 </div>
 
 <div class="slide dark-slide" id="slide-heart">
   <canvas id="heartCanvas"></canvas>
-  <div class="loading-text">Loading...</div>
+  <div class="loading-text" id="loading-text">Drawing...</div>
+  <div class="hint">Klik untuk mulai</div>
 </div>
 
 <div id="content-container"></div>
@@ -148,38 +133,14 @@
 
 <script>
 const slidesData = [
-  {
-    title: "Nama Produk",
-    content: "Wonton Daging Chili Oil"
-  },
-  {
-    title: "Konsep Produk", 
-    content: "Makanan camilan/berat ringan dengan konsep fusion. Wonton isi daging ayam yang disajikan dengan siraman chili oil. Rasanya gurih, pedas, dan cocok untuk anak muda."
-  },
-  {
-    title: "Target Pasar",
-    content: "• Siswa/siswi SMK N 7 KENDAL\n• Pecinta makanan pedas dan praktis\n• Penjualan di lingkungan sekolah dan online via WhatsApp."
-  },
-  {
-    title: "Kelebihan Produk",
-    content: "• Rasa: Kombinasi gurih daging dan pedas nendang dari chili oil buatan sendiri\n• Kemasan: Praktis menggunakan box mika atau cup sekali pakai\n• Harga: Terjangkau, target jual di bawah Rp10.000 per porsi\n• Nilai Jual: Fresh made saat ada pesanan."
-  },
-  {
-    title: "Bahan Baku Utama",
-    content: "• Kulit pangsit/wonton\n• Daging ayam giling\n• Bumbu: bawang putih, merica, kecap asin, minyak wijen, dsb\n• Chili Oil: minyak panas, cabai kering, bawang putih, biji wijen."
-  },
-  {
-    title: "Proses Pembuatan Singkat",
-    content: "1. Isi kulit wonton dengan adonan daging, lalu lipat rapi\n2. Rebus atau kukus hingga matang\n3. Sajikan dengan siraman chili oil saat sudah selesai dibuat."
-  },
-  {
-    title: "Branding",
-    content: "Nama Produk: Wonton Daging Chili Oil\nKelas: XI TSM 2\nWebsite Tugas: https://branding-homework.vercel.app/profile.html"
-  },
-  {
-    title: "Pengetahuan Dasar Wonton",
-    content: "• Asal-usul: Wonton berasal dari Tiongkok sejak Dinasti Tang\n• Jenis: Wonton Kuah, Wonton Goreng, Wonton Chili Oil\n• Kulit Wonton: Tepung terigu, telur, air dengan takaran pas\n• Nilai Gizi: Sumber protein dan capsaicin untuk metabolisme\n• Alasan PKWU: Bahan murah, proses cepat, tahan 2-3 jam"
-  }
+  { title: "Nama Produk", content: "Wonton Daging Chili Oil" },
+  { title: "Konsep Produk", content: "Makanan camilan/berat ringan dengan konsep fusion. Wonton isi daging ayam yang disajikan dengan siraman chili oil. Rasanya gurih, pedas, dan cocok untuk anak muda." },
+  { title: "Target Pasar", content: "• Siswa/siswi SMK N 7 KENDAL\n• Pecinta makanan pedas dan praktis\n• Penjualan di lingkungan sekolah dan online via WhatsApp." },
+  { title: "Kelebihan Produk", content: "• Rasa: Kombinasi gurih daging dan pedas nendang dari chili oil buatan sendiri\n• Kemasan: Praktis menggunakan box mika atau cup sekali pakai\n• Harga: Terjangkau, target jual di bawah Rp10.000 per porsi\n• Nilai Jual: Fresh made saat ada pesanan." },
+  { title: "Bahan Baku Utama", content: "• Kulit pangsit/wonton\n• Daging ayam giling\n• Bumbu: bawang putih, merica, kecap asin, minyak wijen, dsb\n• Chili Oil: minyak panas, cabai kering, bawang putih, biji wijen." },
+  { title: "Proses Pembuatan Singkat", content: "1. Isi kulit wonton dengan adonan daging, lalu lipat rapi\n2. Rebus atau kukus hingga matang\n3. Sajikan dengan siraman chili oil saat sudah selesai dibuat." },
+  { title: "Branding", content: "Nama Produk: Wonton Daging Chili Oil\nKelas: XI TSM 2\nWebsite Tugas: https://branding-homework.vercel.app/profile.html" },
+  { title: "Pengetahuan Dasar Wonton", content: "• Asal-usul: Wonton berasal dari Tiongkok sejak Dinasti Tang\n• Jenis: Wonton Kuah, Wonton Goreng, Wonton Chili Oil\n• Kulit Wonton: Tepung terigu, telur, air dengan takaran pas\n• Nilai Gizi: Sumber protein dan capsaicin untuk metabolisme\n• Alasan PKWU: Bahan murah, proses cepat, tahan 2-3 jam" }
 ];
 
 let currentSlide = 0;
@@ -195,30 +156,81 @@ slidesData.forEach((slide, index) => {
       <h2>${slide.title}</h2>
       <p>${slide.content.replace(/\n/g, '<br>')}</p>
     </div>
+    <div class="hint">Klik untuk lanjut</div>
   `;
   container.appendChild(div);
 });
 
 const allSlides = document.querySelectorAll('.slide');
 const codeDisplay = document.getElementById('code-display');
-const codeText = `// Initializing Product Knowledge Presentation
-// Loading slide data...
-// Rendering content...
-// Ready!`;
+
+const codeText = `import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
+
+def hearta( k ):
+    return 15 * np.sin(k)**3
+
+def heartb( k ):
+    return 12*np.cos(k) - 5*np.cos(2*k) - 2*np.cos(3*k) - np.cos(4*k)
+
+fig, ax = plt.subplots()
+fig.patch.set_facecolor('black')
+ax.set_facecolor('black')
+ax.set_xlim(-350, 350)
+ax.set_ylim(-350, 350)
+ax.set_aspect('equal')
+ax.axis('off')
+
+total_frames = 600
+t = np.linspace(0, 12*np.pi, total_frames)
+x_heart = hearta(t) * 20
+y_heart = heartb(t) * 20
+
+points, = ax.plot([], [], 'ro', markersize=2)
+lines, = ax.plot([], [], 'r-', lw=0.5, alpha=0.3)
+
+def animate(i):
+    xi = x_heart[ : i]
+    yi = y_heart[ : i]
+    x_lines = []
+    y_lines = []
+    for j in range(i):
+        x_lines.extend ( [0, x_heart[j], None])
+        y_lines.extend ( [0, y_heart[j], None])
+    points.set_data(xi, yi)
+    lines.set_data(x_lines, y_lines)
+    return points, lines
+
+ani = animation.FuncAnimation(fig, animate, frames=total_frames, interval=10, blit=True, repeat=False)
+
+plt.show( )`;
+
+function highlightCode(code) {
+  return code
+ .replace(/(\#.*)/g, '<span class="comment">$1</span>')
+ .replace(/\b(def|import|return|for|in|if|from|as)\b/g, '<span class="keyword">$1</span>')
+ .replace(/\b(np|plt|animation|fig|ax)\b/g, '<span class="builtin">$1</span>')
+ .replace(/\b(hearta|heartb|animate)\b/g, '<span class="function">$1</span>')
+ .replace(/('[^']*')/g, '<span class="string">$1</span>')
+ .replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+}
 
 function typeCode() {
   let i = 0;
   isTyping = true;
+  let displayedCode = '';
+
   const interval = setInterval(() => {
     if (i < codeText.length) {
-      codeDisplay.textContent += codeText.charAt(i);
+      displayedCode += codeText.charAt(i);
+      codeDisplay.innerHTML = highlightCode(displayedCode);
       i++;
     } else {
       clearInterval(interval);
       isTyping = false;
-      setTimeout(nextSlide, 2000);
     }
-  }, 30);
+  }, 15);
 }
 
 function nextSlide() {
@@ -226,53 +238,50 @@ function nextSlide() {
     allSlides[currentSlide].classList.remove('active');
     currentSlide++;
     allSlides[currentSlide].classList.add('active');
-    
+
     if (currentSlide === 1) {
-      drawHeart();
+      const canvas = document.getElementById('heartCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let t = 0;
+      const loadingText = document.getElementById('loading-text');
+      const interval = setInterval(() => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#ff2d55';
+
+        const x = canvas.width / 2;
+        const y = canvas.height / 2;
+        const scale = 20;
+
+        ctx.beginPath();
+        for (let i = 0; i < Math.PI * 2; i += 0.01) {
+          const px = 16 * Math.sin(i) * Math.sin(i) * Math.sin(i);
+          const py = 13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i);
+          ctx.lineTo(x + px * scale, y - py * scale);
+        }
+        ctx.fill();
+
+        t++;
+        if (t > 100) {
+          clearInterval(interval);
+          loadingText.textContent = 'Ready';
+        }
+      }, 30);
     }
   }
 }
 
-function drawHeart() {
-  const canvas = document.getElementById('heartCanvas');
-  const ctx = canvas.getContext('2d');
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  
-  let t = 0;
-  const interval = setInterval(() => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#ff2d55';
-    
-    const x = canvas.width / 2;
-    const y = canvas.height / 2;
-    const scale = 20;
-    
-    ctx.beginPath();
-    for (let i = 0; i < Math.PI * 2; i += 0.01) {
-      const px = 16 * Math.sin(i) * Math.sin(i) * Math.sin(i);
-      const py = 13 * Math.cos(i) - 5 * Math.cos(2 * i) - 2 * Math.cos(3 * i) - Math.cos(4 * i);
-      ctx.lineTo(x + px * scale, y - py * scale);
-    }
-    ctx.fill();
-    
-    t++;
-    if (t > 100) {
-      clearInterval(interval);
-      setTimeout(nextSlide, 1500);
-    }
-  }, 50);
-}
-
 document.addEventListener('click', () => {
-  if (!isTyping && currentSlide > 0) {
+  if (!isTyping) {
     nextSlide();
   }
 });
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowRight' || e.key === ' ') {
-    if (!isTyping && currentSlide > 0) {
+    if (!isTyping) {
       nextSlide();
     }
   }
