@@ -304,25 +304,25 @@ function showQR() {
   const qrSize = 280;
   const centerX = canvas.width / 2;
   const centerY = canvas.height / 2 + 80;
-   
+
   const butterflies = [];
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 35; i++) {
     butterflies.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
       tx: centerX - qrSize/2 + Math.random() * qrSize,
       ty: centerY - qrSize/2 + Math.random() * qrSize,
-      vx: (Math.random() - 0.5) * 2,
-      vy: (Math.random() - 0.5) * 2,
+      vx: (Math.random() - 0.5) * 6,
+      vy: (Math.random() - 0.5) * 6,
       angle: Math.random() * Math.PI * 2,
       wingPhase: Math.random() * Math.PI * 2,
-      size: 18 + Math.random() * 6,
+      size: 6 + Math.random() * 3,
       pollen: []
     });
   }
 
   let frame = 0;
-  const totalFrames = 120;
+  const totalFrames = 200;
   const qrImg = new Image();
   qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}`;
 
@@ -334,33 +334,33 @@ function showQR() {
 
     ctx.fillStyle = '#9b30ff';
     ctx.beginPath();
-    ctx.ellipse(-b.size/2, 0, b.size, b.size*0.8, -0.4, 0, Math.PI * 2);
+    ctx.ellipse(-b.size/2, 0, b.size, b.size*0.7, -0.3, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.beginPath();
-    ctx.ellipse(b.size/2, 0, b.size, b.size*0.8, 0.4, 0, Math.PI * 2);
+    ctx.ellipse(b.size/2, 0, b.size, b.size*0.7, 0.3, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = '#4b0082';
     ctx.beginPath();
-    ctx.ellipse(0, 0, b.size*0.25, b.size*0.7, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, b.size*0.2, b.size*0.5, 0, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.fillStyle = 'rgba(155, 48, 255, 0.4)';
     ctx.beginPath();
-    ctx.ellipse(-b.size/2, 0, b.size*0.9, b.size*0.6, -0.4 + Math.sin(b.wingPhase) * 0.6, 0, Math.PI * 2);
+    ctx.ellipse(-b.size/2, 0, b.size*0.8, b.size*0.5, -0.3 + Math.sin(b.wingPhase) * 0.7, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(b.size/2, 0, b.size*0.9, b.size*0.6, 0.4 - Math.sin(b.wingPhase) * 0.6, 0, Math.PI * 2);
+    ctx.ellipse(b.size/2, 0, b.size*0.8, b.size*0.5, 0.3 - Math.sin(b.wingPhase) * 0.7, 0, Math.PI * 2);
     ctx.fill();
 
     ctx.restore();
 
-    if (Math.random() < 0.4) {
+    if (Math.random() < 0.2) {
       b.pollen.push({
-        x: b.x + (Math.random() - 0.5) * 12,
-        y: b.y + (Math.random() - 0.5) * 12,
-        life: 35
+        x: b.x + (Math.random() - 0.5) * 8,
+        y: b.y + (Math.random() - 0.5) * 8,
+        life: 25
       });
     }
   }
@@ -369,13 +369,13 @@ function showQR() {
     butterflies.forEach(b => {
       b.pollen = b.pollen.filter(p => {
         p.life--;
-        p.y += 0.6;
-        const alpha = p.life / 35;
+        p.y += 0.8;
+        const alpha = p.life / 25;
         ctx.fillStyle = `rgba(255, 215, 0, ${alpha})`;
-        ctx.shadowBlur = 18;
+        ctx.shadowBlur = 12;
         ctx.shadowColor = '#ffd700';
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 1.8, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
         return p.life > 0;
@@ -384,36 +384,36 @@ function showQR() {
   }
 
   function animate() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     drawPollen();
 
     butterflies.forEach(b => {
-      if (frame < 80) {
+      if (frame < 160) {
         b.x += b.vx;
         b.y += b.vy;
-        b.vx += (Math.random() - 0.5) * 0.3;
-        b.vy += (Math.random() - 0.5) * 0.3;
-        b.angle += 0.03;
-        b.wingPhase += 0.25;
+        b.vx += (Math.random() - 0.5) * 0.8;
+        b.vy += (Math.random() - 0.5) * 0.8;
+        b.angle += 0.08;
+        b.wingPhase += 0.4;
 
-        if (b.x < -60 || b.x > canvas.width + 60) b.vx *= -1;
-        if (b.y < -60 || b.y > canvas.height + 60) b.vy *= -1;
+        if (b.x < -30 || b.x > canvas.width + 30) b.vx *= -1;
+        if (b.y < -30 || b.y > canvas.height + 30) b.vy *= -1;
       } else {
         const dx = b.tx - b.x;
         const dy = b.ty - b.y;
-        b.vx += dx * 0.0015;
-        b.vy += dy * 0.0015;
-        b.vx *= 0.96;
-        b.vy *= 0.96;
+        b.vx += dx * 0.003;
+        b.vy += dy * 0.003;
+        b.vx *= 0.94;
+        b.vy *= 0.94;
         b.x += b.vx;
         b.y += b.vy;
         b.angle = Math.atan2(b.vy, b.vx);
-        b.wingPhase += 0.15;
+        b.wingPhase += 0.2;
       }
 
-      const alpha = frame < 80? 1 : 1 - ((frame - 80) / 40) * 0.7;
+      const alpha = frame < 160? 0.9 : 0.9 - ((frame - 160) / 40) * 0.6;
       drawButterfly(b, alpha);
     });
 
@@ -430,7 +430,7 @@ function showQR() {
 
   typeText(document.getElementById('qr-title'), 'Scan QR Code', 40);
   typeText(document.getElementById('qr-desc'), QR_LINK, 20);
-  setTimeout(nextSlide, 7000);
+  setTimeout(nextSlide, 11000);
 }
 
 function nextSlide() {
