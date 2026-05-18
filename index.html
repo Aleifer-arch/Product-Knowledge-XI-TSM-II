@@ -89,6 +89,8 @@
 
 .qr-slide {
     text-align: center;
+    justify-content: flex-start;
+    padding-top: 15vh;
   }
 
 .qr-slide h2,.qr-slide p {
@@ -98,13 +100,14 @@
 
 .qr-slide h2 {
     color: #00ffd5;
-    font-size: 32px;
-    margin-bottom: 30px;
+    font-size: 42px;
+    margin-bottom: 15px;
+    font-weight: 700;
   }
 
 .qr-slide p {
-    margin-top: 20px;
-    font-size: 18px;
+    margin-top: 0;
+    font-size: 20px;
     color: #8d96a0;
     font-family: 'Segoe UI', sans-serif;
   }
@@ -121,6 +124,8 @@
 .slide-content h2 { font-size: 22px; }
 .slide-content p,.slide-content li { font-size: 16px; }
     #code-display,.typing-text { font-size: 11px; }
+   .qr-slide h2 { font-size: 32px; }
+   .qr-slide p { font-size: 16px; }
   }
 </style>
 </head>
@@ -301,9 +306,9 @@ function showQR() {
   canvas.height = window.innerHeight;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const qrSize = 280;
+  const qrSize = 320;
   const centerX = canvas.width / 2;
-  const centerY = canvas.height / 2 + 80;
+  const centerY = canvas.height / 2 + 120;
 
   const butterflies = [];
   for (let i = 0; i < 35; i++) {
@@ -312,8 +317,8 @@ function showQR() {
       y: Math.random() * canvas.height,
       tx: centerX - qrSize/2 + Math.random() * qrSize,
       ty: centerY - qrSize/2 + Math.random() * qrSize,
-      vx: (Math.random() - 0.5) * 6,
-      vy: (Math.random() - 0.5) * 6,
+      vx: (Math.random() - 0.5) * 5,
+      vy: (Math.random() - 0.5) * 5,
       angle: Math.random() * Math.PI * 2,
       wingPhase: Math.random() * Math.PI * 2,
       size: 6 + Math.random() * 3,
@@ -322,9 +327,13 @@ function showQR() {
   }
 
   let frame = 0;
-  const totalFrames = 200;
+  const totalFrames = 400;
+  let qrLoaded = false;
+
   const qrImg = new Image();
+  qrImg.crossOrigin = "anonymous";
   qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}`;
+  qrImg.onload = () => { qrLoaded = true; };
 
   function drawButterfly(b, alpha) {
     ctx.save();
@@ -356,7 +365,7 @@ function showQR() {
 
     ctx.restore();
 
-    if (Math.random() < 0.2) {
+    if (Math.random() < 0.15) {
       b.pollen.push({
         x: b.x + (Math.random() - 0.5) * 8,
         y: b.y + (Math.random() - 0.5) * 8,
@@ -390,47 +399,54 @@ function showQR() {
     drawPollen();
 
     butterflies.forEach(b => {
-      if (frame < 160) {
+      if (frame < 320) {
         b.x += b.vx;
         b.y += b.vy;
-        b.vx += (Math.random() - 0.5) * 0.8;
-        b.vy += (Math.random() - 0.5) * 0.8;
-        b.angle += 0.08;
-        b.wingPhase += 0.4;
+        b.vx += (Math.random() - 0.5) * 0.6;
+        b.vy += (Math.random() - 0.5) * 0.6;
+        b.angle += 0.06;
+        b.wingPhase += 0.35;
 
         if (b.x < -30 || b.x > canvas.width + 30) b.vx *= -1;
         if (b.y < -30 || b.y > canvas.height + 30) b.vy *= -1;
       } else {
         const dx = b.tx - b.x;
         const dy = b.ty - b.y;
-        b.vx += dx * 0.003;
-        b.vy += dy * 0.003;
-        b.vx *= 0.94;
-        b.vy *= 0.94;
+        b.vx += dx * 0.002;
+        b.vy += dy * 0.002;
+        b.vx *= 0.95;
+        b.vy *= 0.95;
         b.x += b.vx;
         b.y += b.vy;
         b.angle = Math.atan2(b.vy, b.vx);
-        b.wingPhase += 0.2;
+        b.wingPhase += 0.15;
       }
 
-      const alpha = frame < 160? 0.9 : 0.9 - ((frame - 160) / 40) * 0.6;
+      const alpha = frame < 320? 0.9 : 0.9 - ((frame - 320) / 80) * 0.6;
       drawButterfly(b, alpha);
     });
 
     frame++;
-    if (frame < totalFrames) {
+    
+    if (frame >= totalFrames && qrLoaded) {
+      ctx.drawImage(qrImg, centerX - qrSize/2, centerY - qrSize/2);
+      setTimeout(nextSlide, 3000);
+    } else if (frame < totalFrames) {
       requestAnimationFrame(animate);
     } else {
-      qrImg.onload = () => {
-        ctx.drawImage(qrImg, centerX - qrSize/2, centerY - qrSize/2);
-      };
+      const checkQR = setInterval(() => {
+        if (qrLoaded) {
+          clearInterval(checkQR);
+          ctx.drawImage(qrImg, centerX - qrSize/2, centerY - qrSize/2);
+          setTimeout(nextSlide, 3000);
+        }
+      }, 100);
     }
   }
   animate();
 
   typeText(document.getElementById('qr-title'), 'Scan QR Code', 40);
   typeText(document.getElementById('qr-desc'), QR_LINK, 20);
-  setTimeout(nextSlide, 11000);
 }
 
 function nextSlide() {
