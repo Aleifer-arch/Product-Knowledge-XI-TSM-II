@@ -35,6 +35,7 @@
     justify-content: center;
     align-items: center;
     padding: 40px 20px;
+    position: relative;
   }
 
 .slide.active {
@@ -60,12 +61,16 @@
 
   canvas {
     display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
   }
 
 .slide-content {
     max-width: 800px;
     width: 100%;
     text-align: left;
+    z-index: 2;
   }
 
 .slide-content h2 {
@@ -86,6 +91,11 @@
     text-align: center;
   }
 
+.qr-slide h2,.qr-slide p {
+    z-index: 2;
+    position: relative;
+  }
+
 .qr-slide h2 {
     color: #00ffd5;
     font-size: 32px;
@@ -103,6 +113,8 @@
     font-size: 72px;
     color: #00ffd5;
     letter-spacing: 10px;
+    z-index: 2;
+    position: relative;
   }
 
   @media (max-width: 600px) {
@@ -125,6 +137,7 @@
 <div id="content-container"></div>
 
 <div class="slide dark-slide qr-slide" id="slide-qr">
+  <canvas id="qrCanvas"></canvas>
   <h2 class="typing-text" id="qr-title"></h2>
   <p class="typing-text" id="qr-desc"></p>
 </div>
@@ -282,7 +295,7 @@ function drawHeartPoints() {
 }
 
 function showQR() {
-  const canvas = document.getElementById('heartCanvas');
+  const canvas = document.getElementById('qrCanvas');
   const ctx = canvas.getContext('2d');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -293,18 +306,12 @@ function showQR() {
   const centerY = canvas.height / 2;
 
   const particles = [];
-  const gridSize = 25;
-  const dotSize = qrSize / gridSize;
-
-  for (let i = 0; i < 120; i++) {
-    const tx = centerX - qrSize/2 + Math.random() * qrSize;
-    const ty = centerY - qrSize/2 + Math.random() * qrSize;
-
+  for (let i = 0; i < 150; i++) {
     particles.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      tx: tx,
-      ty: ty,
+      tx: centerX - qrSize/2 + Math.random() * qrSize,
+      ty: centerY - qrSize/2 + Math.random() * qrSize,
       vx: 0,
       vy: 0
     });
@@ -313,37 +320,39 @@ function showQR() {
   let frame = 0;
   const totalFrames = 60;
 
-  const animate = setInterval(() => {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+  function animate() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     particles.forEach(p => {
       const dx = p.tx - p.x;
       const dy = p.ty - p.y;
-      p.vx += dx * 0.008;
-      p.vy += dy * 0.008;
-      p.vx *= 0.94;
-      p.vy *= 0.94;
+      p.vx += dx * 0.01;
+      p.vy += dy * 0.01;
+      p.vx *= 0.93;
+      p.vy *= 0.93;
       p.x += p.vx;
       p.y += p.vy;
 
       const opacity = 0.3 + (frame / totalFrames) * 0.7;
       ctx.fillStyle = `rgba(138, 43, 226, ${opacity})`;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 2.5, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
       ctx.fill();
     });
 
     frame++;
-    if (frame >= totalFrames) {
-      clearInterval(animate);
+    if (frame < totalFrames) {
+      requestAnimationFrame(animate);
+    } else {
       const qrImg = new Image();
       qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=${qrSize}x${qrSize}&data=${encodeURIComponent(QR_LINK)}`;
       qrImg.onload = () => {
         ctx.drawImage(qrImg, centerX - qrSize/2, centerY - qrSize/2);
       };
     }
-  }, 50);
+  }
+  animate();
 
   typeText(document.getElementById('qr-title'), 'Scan QR Code', 40);
   typeText(document.getElementById('qr-desc'), QR_LINK, 20);
@@ -369,7 +378,7 @@ function nextSlide() {
         });
       });
     } else if (currentSlide === allSlides.length - 2) {
-      showQR();
+      setTimeout(showQR, 100);
     } else if (currentSlide === allSlides.length - 1) {
       typeText(document.getElementById('end-text'), 'END', 100);
     }
